@@ -35,7 +35,7 @@ class SensorizedNeedleNode( NeedleNode ):
                 description="Whether to perform temperature compensation or not.",
                 )
         self.temperature_compensate = self.declare_parameter(
-                pd_tempcomp.name, descriptor=pd_tempcomp, value=True
+                pd_tempcomp.name, descriptor=pd_tempcomp, value=False
                 ).get_parameter_value().bool_value
 
         # make all positive since we are using processed wavelengths
