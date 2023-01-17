@@ -184,7 +184,7 @@ class ShapeSensingNeedleNode( NeedleNode ):
         # elif
 
         # transform the current needle pose
-        pmat, Rmat = self.__transform( pmat, Rmat )
+        # pmat, Rmat = self.__transform( pmat, Rmat )
 
         return pmat, Rmat
 
