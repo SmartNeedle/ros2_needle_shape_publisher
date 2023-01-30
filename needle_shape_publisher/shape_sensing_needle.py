@@ -268,7 +268,7 @@ class ShapeSensingNeedleNode( NeedleNode ):
         self.current_needle_pose[ 1 ] = self.current_needle_pose[ 1 ] @ self.R_NEEDLEPOSE  # update current needle pose
 
         # update the insertion depth (y-coordinate is the insertion depth)
-        self.ss_needle.current_depth = min( self.current_needle_pose[ 0 ][ 1 ],
+        self.ss_needle.current_depth = min( self.current_needle_pose[ 0 ][ 2 ],
                                             self.ss_needle.length )  # TODO: update w/ insertion point
         self.get_logger().debug( f"Current insertion depth: {self.ss_needle.current_depth}" )
 
