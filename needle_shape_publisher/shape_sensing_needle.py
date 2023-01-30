@@ -18,17 +18,18 @@ class ShapeSensingNeedleNode( NeedleNode ):
     """Needle to handle shape-sensing applications"""
 
     # - optimization options
-    PARAM_OPTIMIZER = ".".join( [ NeedleNode.PARAM_NEEDLE, 'optimizer' ] )
-    PARAM_KCINIT = ".".join( [ PARAM_OPTIMIZER, 'initial_kappa_c' ] )  # initial kappa_c for optimization
-    PARAM_WINIT = ".".join( [ PARAM_OPTIMIZER, 'initial_w_init' ] )  # initial omega_init for optimization
-    PARAM_OPTIM_MAXITER = ".".join( [ PARAM_OPTIMIZER, 'max_iterations' ] )
+    PARAM_OPTIMIZER        = ".".join( [ NeedleNode.PARAM_NEEDLE, 'optimizer' ] )
+    PARAM_KCINIT           = ".".join( [ PARAM_OPTIMIZER, 'initial_kappa_c' ] ) # initial kappa_c for optimization
+    PARAM_WINIT            = ".".join( [ PARAM_OPTIMIZER, 'initial_w_init' ] )  # initial omega_init for optimization
+    PARAM_OPTIM_MAXITER    = ".".join( [ PARAM_OPTIMIZER, 'max_iterations' ] )
     PARAM_OPTIM_MAXITER_LB = 2
 
     # needle pose parameters
     # R_NEEDLEPOSE = geometry.rotx( -np.pi / 2 )  # +z-axis -> +y-axis
-    R_NEEDLEPOSE = np.array( [ [ -1, 0, 0 ],
-                               [ 0, 0, 1 ],
-                               [ 0, 1, 0 ] ] )
+    # R_NEEDLEPOSE = np.array( [ [ -1, 0, 0 ],
+    #                            [ 0, 0, 1 ],
+    #                            [ 0, 1, 0 ] ] )
+    R_NEEDLEPOSE = np.eye(3)
 
     def __init__( self, name="ShapeSensingNeedle" ):
         super().__init__( name )
@@ -99,15 +100,16 @@ class ShapeSensingNeedleNode( NeedleNode ):
         #         f"__transform: pmat: {pmat.shape}, Rmat: {Rmat.shape}, p: {current_p.shape}, R:{current_R.shape}" )
 
         # rigid body transform the current needle pose
+        pmat_tf, Rmat_tf = None, None
         if pmat is not None:
+            # update needle origin to the insertion point (in the needle frame)
+            pmat[:, 2] -= self.ss_needle.length - self.insertion_depth
             pmat_tf = pmat @ current_R.T + current_p.reshape( 1, -1 )
-        else:
-            pmat_tf = None
+
+        # if
 
         if Rmat is not None:
             Rmat_tf = np.einsum( 'jk, ikl -> ijl', current_R, Rmat )
-        else:
-            Rmat_tf = None
 
         return pmat_tf, Rmat_tf
 
@@ -184,7 +186,7 @@ class ShapeSensingNeedleNode( NeedleNode ):
         # elif
 
         # transform the current needle pose
-        # pmat, Rmat = self.__transform( pmat, Rmat )
+        pmat, Rmat = self.__transform( pmat, Rmat )
 
         return pmat, Rmat
 
