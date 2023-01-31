@@ -103,7 +103,6 @@ class ShapeSensingNeedleNode( NeedleNode ):
         pmat_tf, Rmat_tf = None, None
         if pmat is not None:
             # update needle origin to the insertion point (in the needle frame)
-            pmat[:, 2] -= self.ss_needle.length - self.insertion_depth
             pmat_tf = pmat @ current_R.T + current_p.reshape( 1, -1 )
 
         # if
@@ -260,7 +259,7 @@ class ShapeSensingNeedleNode( NeedleNode ):
 
     def sub_needlepose_callback( self, msg: PoseStamped ):
         """ Subscription to entrypoint topic """
-        self.current_needle_pose = list( utilities.msg2pose( msg.pose ) )
+        self.current_needle_pose      = list( utilities.msg2pose( msg.pose ) )
         self.current_needle_pose[ 0 ] = self.current_needle_pose[ 0 ] * 1000
         self.get_logger().debug( f"NeedlePoseCB: pose[0]: {self.current_needle_pose[ 0 ]}" )
         self.get_logger().debug( f"NeedlePoseCB: pose[1]: {self.current_needle_pose[ 1 ]}" )
@@ -268,13 +267,15 @@ class ShapeSensingNeedleNode( NeedleNode ):
         self.current_needle_pose[ 1 ] = self.current_needle_pose[ 1 ] @ self.R_NEEDLEPOSE  # update current needle pose
 
         # update the insertion depth (y-coordinate is the insertion depth)
-        self.ss_needle.current_depth = min( self.current_needle_pose[ 0 ][ 2 ],
-                                            self.ss_needle.length )  # TODO: update w/ insertion point
-        self.get_logger().debug( f"Current insertion depth: {self.ss_needle.current_depth}" )
+        self.insertion_depth = min( 
+            self.current_needle_pose[ 0 ][ 2 ], # z-axis
+            self.ss_needle.length
+        )  # TODO: update w/ insertion point
+        self.get_logger().debug( f"Current insertion depth: {self.insertion_depth}" )
 
         # update the history of orientations
-        depth_ds = msg.pose.position.y - msg.pose.position.y % self.ss_needle.ds
-        theta = msg.pose.orientation.y
+        depth_ds = msg.pose.position.z - msg.pose.position.z % self.ss_needle.ds
+        theta = msg.pose.orientation.z
         if np.any( self.history_needle_pose[ 0 ] == depth_ds ):  # check if we already have this value
             idx = np.argwhere( self.history_needle_pose[ 0 ] == depth_ds ).ravel()
             self.history_needle_pose[ 1, idx ] = theta
