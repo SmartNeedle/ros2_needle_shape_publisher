@@ -27,7 +27,7 @@ def generate_launch_description():
 
     # determine #chs and numAAs
     numCHs, numAAs = None, None
-    default_needleparam_file = "needle_params_2022-12-11_Jig-Calibration_3CH-4AA-0005.json"
+    default_needleparam_file = "3CH-4AA-0005_needle_params_2022-12-11_Jig-Calibration.json"
     for arg in sys.argv:
         if arg.startswith("needleParamFile:="):
             needleParamFile = arg.split(":=")[1]
@@ -38,7 +38,7 @@ def generate_launch_description():
     if numCHs is None and numAAs is None: # just in-case using default value
         needleParamFile = default_needleparam_file
 
-    numCHs, numAAs = determineCHsAAs(os.path.join(pkg_needle_shape_publisher, "needle_data", needleParamFile))
+    # numCHs, numAAs = determineCHsAAs(os.path.join(pkg_needle_shape_publisher, "needle_data", needleParamFile))
 
     # arguments
     arg_params = DeclareLaunchArgument( 'needleParamFile',
