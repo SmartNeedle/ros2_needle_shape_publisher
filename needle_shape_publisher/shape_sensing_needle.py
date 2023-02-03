@@ -260,7 +260,7 @@ class ShapeSensingNeedleNode( NeedleNode ):
     def sub_needlepose_callback( self, msg: PoseStamped ):
         """ Subscription to entrypoint topic """
         self.current_needle_pose      = list( utilities.msg2pose( msg.pose ) )
-        self.current_needle_pose[ 0 ] = self.current_needle_pose[ 0 ] * 1000
+        self.current_needle_pose[ 0 ] = self.current_needle_pose[ 0 ]
         self.get_logger().debug( f"NeedlePoseCB: pose[0]: {self.current_needle_pose[ 0 ]}" )
         self.get_logger().debug( f"NeedlePoseCB: pose[1]: {self.current_needle_pose[ 1 ]}" )
 
