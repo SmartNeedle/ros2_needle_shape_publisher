@@ -44,8 +44,9 @@ class ShapeSensingNeedleNode( NeedleNode ):
 
         # configure shape-sensing needle
         self.ss_needle.optimizer.options[ 'options' ] = { 'maxiter': optim_maxiter }
+        self.ss_needle.optimizer.options[ 'w_init_bounds' ][2] = [ -0.001, 0.001 ]
         self.ss_needle.ref_wavelengths = np.ones_like( self.ss_needle.ref_wavelengths )
-        self.ss_needle.current_depth = 125  # TODO: need to change insertion depth. Keep for testing
+        self.ss_needle.current_depth = 0  # TODO: need to change insertion depth. Keep for testing
         self.air_depth = 0  # the length of the needle in the air
         self.ss_needle.current_curvatures = np.zeros( (2, self.ss_needle.num_activeAreas), dtype=float )
 
