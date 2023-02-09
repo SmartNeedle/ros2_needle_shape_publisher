@@ -35,8 +35,9 @@ class ShapeSensingNeedleNode( NeedleNode ):
         super().__init__( name )
 
         # declare ang get parameters
-        self.kc_i = np.array( [ 0.002 ] )
-        self.w_init_i = np.array( [ self.kc_i[ 0 ], 0, 0 ] )
+        self.kc_i     = np.array( [ 0.0005 ] )
+        self.w_init_i = np.array( [ self.kc_i[ 0 ], 0.0, 0.0 ] )
+
         pd_optim_maxiter = ParameterDescriptor( name=self.PARAM_OPTIM_MAXITER, type=Parameter.Type.INTEGER.value,
                                                 description="Maximum iterations for convergence" )
         optim_maxiter = self.declare_parameter( pd_optim_maxiter.name, value=15,
@@ -44,7 +45,7 @@ class ShapeSensingNeedleNode( NeedleNode ):
 
         # configure shape-sensing needle
         self.ss_needle.optimizer.options[ 'options' ] = { 'maxiter': optim_maxiter }
-        self.ss_needle.optimizer.options[ 'w_init_bounds' ][2] = [ -0.001, 0.001 ]
+        self.ss_needle.optimizer.options[ 'w_init_bounds' ][2] = [ -1e-5, 1e-5 ]
         self.ss_needle.ref_wavelengths = np.ones_like( self.ss_needle.ref_wavelengths )
         self.ss_needle.current_depth = 0  # TODO: need to change insertion depth. Keep for testing
         self.air_depth = 0  # the length of the needle in the air
