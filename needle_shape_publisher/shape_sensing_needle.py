@@ -237,7 +237,10 @@ class ShapeSensingNeedleNode( NeedleNode ):
     def sub_curvatures_callback( self, msg: Float64MultiArray ):
         """ Subscription to needle sensor curvatures """
         # grab the current curvatures
-        curvatures = np.reshape( msg.data, (-1, 2), order='F' ).T
+        curvatures = np.reshape( msg.data, (2, -1), order='F' )
+
+        self.get_logger().debug(f"Curvatures X: {curvatures[0]}")
+        self.get_logger().debug(f"Curvatures Y: {curvatures[1]}")
 
         # update the curvatures
         self.ss_needle.current_curvatures = curvatures

@@ -106,6 +106,8 @@ class SensorizedNeedleNode( NeedleNode ):
         """ Publish the curvatures of the shape-sensing needle"""
         # current_curvatures are N x 2 ( columns are: x,  y ) -> ravel('F') -> (X_AA1, X_AA2, ..., Y_AA1, Y_AA2,...)
         curvatures = 1e-3 * self.ss_needle.current_curvatures.ravel( order='F' ) # convert from 1/m -> 1/mm
+
+        self.get_logger().debug(f"Curvatures: {self.ss_needle.current_curvatures * 1e-3}")
         itemsize = self.ss_needle.current_curvatures.dtype.itemsize
         dimx = MultiArrayDimension(
                 label="x", stride=itemsize,
