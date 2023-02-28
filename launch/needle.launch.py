@@ -27,7 +27,7 @@ def generate_launch_description():
 
     # determine #chs and numAAs
     numCHs, numAAs = None, None
-    default_needleparam_file = "3CH-4AA-0005_needle_params_2022-12-11_Jig-Calibration.json"
+    default_needleparam_file = "3CH-4AA-0005_needle_params_2022-01-26_Jig-Calibration_best_weights.json"
     for arg in sys.argv:
         if arg.startswith("needleParamFile:="):
             needleParamFile = arg.split(":=")[1]
