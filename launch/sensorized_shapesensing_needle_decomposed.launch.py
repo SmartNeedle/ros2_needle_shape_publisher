@@ -14,6 +14,8 @@ def generate_launch_description():
                                             default_value="200" )
     arg_optim_maxiter = DeclareLaunchArgument( 'optimMaxIterations', default_value="15",
                                                description="The maximum number of iterations for needle shape optimizer." )
+    arg_temp_compensate = DeclareLaunchArgument( 'tempCompensate', default_value="True",
+                                               description="Whether to perform temperature compensation or not." )
 
     # Nodes
     node_sensorizedneedle = Node(
@@ -23,8 +25,9 @@ def generate_launch_description():
             output='screen',
             emulate_tty=True,
             parameters=[ {
-                    'needle.paramFile'    : LaunchConfiguration( 'needleParamFile' ),
-                    'needle.numberSignals': LaunchConfiguration( 'numSignals' )
+                    'needle.paramFile'                   : LaunchConfiguration( 'needleParamFile' ),
+                    'needle.numberSignals'               : LaunchConfiguration( 'numSignals' ),
+                    'needle.sensor.temperatureCompensate': LaunchConfiguration( 'tempCompensate' ),
                     } ]
             )
     node_ssneedle = Node(
@@ -43,6 +46,7 @@ def generate_launch_description():
     ld.add_action( arg_needleparam )
     ld.add_action( arg_numsignals )
     ld.add_action( arg_optim_maxiter )
+    ld.add_action( arg_temp_compensate )
 
     ld.add_action( node_sensorizedneedle )
     ld.add_action( node_ssneedle )
