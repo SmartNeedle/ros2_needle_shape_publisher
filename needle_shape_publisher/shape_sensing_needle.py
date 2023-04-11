@@ -131,6 +131,10 @@ class ShapeSensingNeedleNode( NeedleNode ):
                 pmat, Rmat = self.ss_needle.get_needle_shape( *self.kc_i[ 0:2 ], self.w_init_i )
 
         # elif
+
+        elif self.ss_needle.current_shapetype == NEEDLESHAPETYPE.CONSTANT_CURVATURE:
+            pmat, Rmat = self.ss_needle.get_needle_shape()
+
         else:
             self.get_logger().error( f"Needle shape type: {self.ss_needle.current_shapetype} is not implemented." )
             self.get_logger().error( f"Resorting to shape type: {NEEDLESHAPETYPE.SINGLEBEND_SINGLELAYER}." )
