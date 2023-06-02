@@ -8,7 +8,7 @@ from std_msgs.msg import Header
 from needle_shape_sensing import geometry
 
 
-def msg2pose( msg: Pose ):
+def msg2pose( msg: Pose ) -> np.ndarray:
     """ Convert a Pose message into a pose"""
     pos = np.array( [ msg.position.x, msg.position.y, msg.position.z ] )
     quat = np.array( [ msg.orientation.w, msg.orientation.x, msg.orientation.y, msg.orientation.z ] )
@@ -19,7 +19,24 @@ def msg2pose( msg: Pose ):
 
 # msg2pose
 
-def pose2msg( pos: np.ndarray, R: np.ndarray ):
+def msg2poses( msg: PoseArray ) -> np.ndarray:
+    """ Convert a pose message into an array of 4x4 matrices (N, 4, 4) of rigid poses"""
+    poses = list()
+
+    for pose_msg in msg.poses:
+        tf = np.eye(4)
+        
+        p, R = msg2pose(pose_msg)
+        tf[:3, :3] = R
+        tf[:3, 3] = p
+
+        poses.append(tf)
+
+    # for
+    
+    return np.stack(poses, axis=0)
+
+def pose2msg( pos: np.ndarray, R: np.ndarray ) -> Pose:
     """ Turn a pose into a Pose message """
     msg = Pose()
 
