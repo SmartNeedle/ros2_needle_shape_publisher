@@ -86,14 +86,20 @@ class ShapeSensingNeedleNode( NeedleNode ):
 
     # insertion_depth setter
 
+    @property
+    def needle_guide_exit_pt(self):
+        return self.current_needle_pose[0] * [1, 1, 0]
+
+    # needle_guide_exit_pt
+
     def __transform( self, pmat: np.ndarray, Rmat: np.ndarray ):
         """ Transforms the needle pose of an N-D array using the current needle pose
-        
+
             :param pmat: numpy array of N x 3 size.
-            :param Rmat: numpy array of orientations of size N x 3 x 3 
-            
+            :param Rmat: numpy array of orientations of size N x 3 x 3
+
             :returns: pmat transformed by current needle pose, Rmat transformed by current needle pose
-        
+
         """
 
         current_p, current_R = self.current_needle_pose
@@ -119,16 +125,17 @@ class ShapeSensingNeedleNode( NeedleNode ):
     def get_needleshape( self ):
         """ Get the current needle shape"""
         # TODO: incorporate rotation while inserted into tissue
-        # TODO: debug needle skin entry point
 
         if self.ss_needle.current_shapetype & NEEDLESHAPETYPE.SINGLEBEND_SINGLELAYER == NEEDLESHAPETYPE.SINGLEBEND_SINGLELAYER:  # single layer
             pmat, Rmat = self.ss_needle.get_needle_shape( self.kc_i[ 0 ], self.w_init_i )
 
         elif self.ss_needle.current_shapetype & NEEDLESHAPETYPE.SINGLEBEND_DOUBLELAYER == 0x02:  # 2 layers
-            if len( self.kc_i ) < 2:
-                pmat, Rmat = self.ss_needle.get_needle_shape( self.kc_i[ 0 ], self.kc_i[ 0 ], self.w_init_i )
-            else:
-                pmat, Rmat = self.ss_needle.get_needle_shape( *self.kc_i[ 0:2 ], self.w_init_i )
+            kc1 = self.kc_i[0]
+            kc2 = kc1
+            if len( self.kc_i ) >= 2:
+                kc2 = self.kc_i[1]
+                
+            pmat, Rmat = self.ss_needle.get_needle_shape( kc1, kc2, self.w_init_i )
 
         # elif
 
@@ -143,55 +150,70 @@ class ShapeSensingNeedleNode( NeedleNode ):
 
         # else
 
+        if pmat is None and Rmat is None:
+            return pmat, Rmat
+
         # generate the straight length section
         dL = self.ss_needle.length - self.ss_needle.current_depth
-        if dL > self.ss_needle.ds and pmat is not None and Rmat is not None:
+        if dL > self.ss_needle.ds:
             # generate other needle lengths in ds increments
-            dL_air = 0 # self.air_depth
+            dL_air = self.current_insertion_pt[2] - self.needle_guide_exit_pt[2]
             dL_straight = dL - dL_air
+
             L_air = np.arange( 0, (dL_air // self.ss_needle.ds + 1) * self.ss_needle.ds, self.ss_needle.ds )
             L_straight = np.arange( 0, (dL_straight // self.ss_needle.ds + 1) * self.ss_needle.ds, self.ss_needle.ds )
 
             # generate straight needle poses
             pmat_straight = np.hstack( (np.zeros( (len( L_straight ), 2) ), L_straight.reshape( -1, 1 )) )
-            # Rmat_straight = Rmat[ 0:1 ].repeat( len( L_straight ), axis=0 )  # repeat orientation
             Rmat_straight = np.eye( 3 )[ np.newaxis ].repeat( len( L_straight ), axis=0 )  # straight needle
 
             # generate air deflection point
+            pmat_air, Rmat_air = np.zeros(( 1, 3 )), np.eye(3)[np.newaxis]
             if dL_air > 0:
-                pmat_air = AirDeflection.shape_quadratic( L_air, self.R_NEEDLEPOSE.T @ self.current_insertion_pt )
+                pmat_air = (
+                    AirDeflection.shape_quadratic( 
+                        L_air, 
+                        self.current_insertion_pt
+                    )
+                )
                 Rmat_air = np.eye( 3 )[ np.newaxis ].repeat( len( L_air ), axis=0 )  # TODO: update for actual pose
 
-                pmat_air += pmat_straight[ -1 ]
-            # update the needle shapes to move coordinate frames
-            # pmat_air += pmat_straight[ -1 ]
-            pmat += pmat_straight[ -1 ]
+            # if
 
-            # trim off the bases so no redundancy
-            # pmat_air = pmat_air[ 1: ]
-            # Rmat_air = Rmat_air[ 1: ]
-            # pmat = pmat[ 1: ]
-            # Rmat = Rmat[ 1: ]
+            # update the needle shapes to move coordinate frames
+            pmat_air += pmat_straight[-1:]
+            pmat     += pmat_air[-1:]
+
+            Rmat_air = Rmat_straight[-1:] @ Rmat_air
+            Rmat     = Rmat_air[-1:] @ Rmat
 
             # append to the current pmat and Rmat
-            # pmat = np.vstack( (pmat_straight, pmat_air, pmat) )
-            # Rmat = np.concatenate( (Rmat_straight, Rmat_air, Rmat), 0 )
-            pmat = np.vstack( (pmat_straight, pmat) )
-            Rmat = np.concatenate( (Rmat_straight, Rmat), 0 )
+            pmat = np.vstack(
+                (
+                    pmat_straight,
+                    pmat_air[1:],
+                    pmat[1:],
+                )
+            )
+            Rmat = np.concatenate(
+                (
+                    Rmat_straight,
+                    Rmat_air[1:],
+                    Rmat[1:],
+                ),
+                axis=0
+            )
 
         # if
-        elif dL > 0 and pmat is not None and Rmat is not None:  # less than ds increment
+        elif dL > 0:  # less than ds increment
             pmat[ :, 2 ] += dL  # move base point
-            # Rmat_straight = Rmat[0:1] # copy first orientation
             Rmat_straight = np.eye( 3 )[ np.newaxis ]  # straight orientation
 
-            pmat = np.vstack( (np.zeros( 3 ), pmat) )  # append the 0 point
-            Rmat = np.concatenate( (Rmat_straight, Rmat), axis=0 )  # Copy first orientation
+            # append the 0 point
+            pmat = np.vstack( (np.zeros( (1, 3) ), pmat) )
+            Rmat = np.concatenate( (Rmat_straight, Rmat), axis=0 )
 
         # elif
-
-        # transform the current needle pose
-        pmat, Rmat = self.__transform( pmat, Rmat )
 
         return pmat, Rmat
 
@@ -258,11 +280,7 @@ class ShapeSensingNeedleNode( NeedleNode ):
 
     def sub_entrypoint_callback( self, msg: Point ):
         """ Subscription to entrypoint topic """
-        # TODO: update current needle insertion depth
         self.current_insertion_pt = np.array( [ msg.x, msg.y, msg.z ] )  # assume it is in the
-        self.insertion_depth = max( 0, self.current_needle_pose[ 0 ][ 1 ] - self.current_insertion_pt[
-            1 ] )  # assume in stage frame
-        self.air_depth = np.linalg.norm( self.current_insertion_pt )
 
     # sub_entrypoint_callback
 
@@ -276,7 +294,7 @@ class ShapeSensingNeedleNode( NeedleNode ):
         self.current_needle_pose[ 1 ] = self.current_needle_pose[ 1 ] @ self.R_NEEDLEPOSE  # update current needle pose
 
         # update the insertion depth (y-coordinate is the insertion depth)
-        self.insertion_depth = min( 
+        self.insertion_depth = min(
             self.current_needle_pose[ 0 ][ 2 ], # z-axis
             self.ss_needle.length
         )  # TODO: update w/ insertion point
