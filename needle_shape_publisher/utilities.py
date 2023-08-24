@@ -8,6 +8,17 @@ from std_msgs.msg import Header
 from needle_shape_sensing import geometry
 
 
+def calculate_needle_length(shape: np.ndarray):
+    return np.sum(
+        np.linalg.norm(
+            np.diff(shape, n=1, axis=0),
+            ord=2, 
+            axis=1
+        )
+    )
+
+# calculate_needle_length
+
 def msg2pose( msg: Pose ) -> np.ndarray:
     """ Convert a Pose message into a pose"""
     pos = np.array( [ msg.position.x, msg.position.y, msg.position.z ] )
