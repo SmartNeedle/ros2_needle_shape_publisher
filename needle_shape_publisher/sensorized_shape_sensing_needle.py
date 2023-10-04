@@ -82,7 +82,7 @@ class NeedleNode(Node):
         self.declare_parameter( self.PARAM_NEEDLELENGTH, descriptor=pd_ndllen, value=self.ss_needle.length )
         self.declare_parameter( self.PARAM_CHS, descriptor=pd_numchs, value=self.ss_needle.num_channels )
         self.declare_parameter( self.PARAM_AAS, descriptor=pd_numaas, value=self.ss_needle.num_activeAreas )
-        self.declare_parameter( self.PARAM_SLOCS, descriptor=pd_slocs, value=self.ss_needle.sensor_location_tip )
+        self.declare_parameter( self.PARAM_SLOCS, descriptor=pd_slocs, value=self.ss_needle.sensor_location_tip.tolist() )
         self.declare_parameter( self.PARAM_AAWEIGHTS, descriptor=pd_aawgts, value=w )
 
     # __init__
