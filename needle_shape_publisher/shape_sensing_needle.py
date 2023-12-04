@@ -166,8 +166,9 @@ class ShapeSensingNeedleNode( NeedleNode ):
             return pmat, Rmat
 
         # generate the straight length section
-        L_needle = utilities.calculate_needle_length(pmat)
-        dL       = self.ss_needle.length - L_needle
+        L_needle      = utilities.calculate_needle_length(pmat)
+        dL            = self.ss_needle.length - L_needle
+        pmat_straight = np.zeros((0, 3), dtype=pmat.dtype)
         if dL > self.ss_needle.ds:
             # generate straight needle length in ds increments
             L_straight = np.arange( 0, (dL // self.ss_needle.ds + 1) * self.ss_needle.ds, self.ss_needle.ds )
