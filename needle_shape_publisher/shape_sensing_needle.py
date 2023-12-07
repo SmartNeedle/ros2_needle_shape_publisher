@@ -5,7 +5,7 @@ from rclpy import Parameter
 # messages
 from geometry_msgs.msg import PoseArray, Point, PoseStamped
 from rcl_interfaces.msg import ParameterDescriptor
-from std_msgs.msg import Float64MultiArray, Header
+from std_msgs.msg import Float64MultiArray, Header, Float64
 # needle shape sensing package
 from needle_shape_sensing.intrinsics import SHAPETYPE as NEEDLESHAPETYPE, AirDeflection
 
@@ -61,6 +61,7 @@ class ShapeSensingNeedleNode( NeedleNode ):
         self.pub_kc    = self.create_publisher( Float64MultiArray, 'state/kappac', 1 )
         self.pub_winit = self.create_publisher( Float64MultiArray, 'state/winit', 1 )
         self.pub_shape = self.create_publisher( PoseArray, 'state/current_shape', 1 )
+        self.pub_depth = self.create_publisher( Float64, 'state/insertion_depth', 1 )
 
         # create subscriptions
         self.sub_curvatures = self.create_subscription( 
@@ -101,7 +102,7 @@ class ShapeSensingNeedleNode( NeedleNode ):
 
     @property
     def needle_guide_exit_pt(self):
-        return self.current_needle_pose[0] * [1, 1, 0]
+        return self.current_needle_pose[0] * [1, 1, 1]
 
     # needle_guide_exit_pt
 
@@ -208,6 +209,8 @@ class ShapeSensingNeedleNode( NeedleNode ):
             axis=0,
         )
 
+        pmat, Rmat = self.__transform(pmat, Rmat)
+
         return pmat, Rmat
 
     # get_needleshape
@@ -241,6 +244,7 @@ class ShapeSensingNeedleNode( NeedleNode ):
         # generate kappa_c and w_init message
         msg_kc = Float64MultiArray( data=self.kc_i )
         msg_winit = Float64MultiArray( data=self.w_init_i.tolist() )
+        msg_depth = Float64(data=float(self.insertion_depth))
 
         self.get_logger().debug( f"Needle Shapes: {pmat.shape}, {Rmat.shape}, {len( msg_shape.poses )}" )
 
@@ -248,6 +252,7 @@ class ShapeSensingNeedleNode( NeedleNode ):
         self.pub_shape.publish( msg_shape )
         self.pub_kc.publish( msg_kc )
         self.pub_winit.publish( msg_winit )
+        self.pub_depth.publish( msg_depth )
         self.get_logger().debug( "Published needle shape, kappa_c and w_init on topics: "
                                  f"{self.pub_shape.topic},{self.pub_kc.topic},{self.pub_winit.topic}" )
 
