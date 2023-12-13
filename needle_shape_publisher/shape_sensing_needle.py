@@ -102,7 +102,7 @@ class ShapeSensingNeedleNode( NeedleNode ):
 
     @property
     def needle_guide_exit_pt(self):
-        return self.current_needle_pose[0] * [1, 1, 1]
+        return self.current_needle_pose[0] * [1, 1, 0]
 
     # needle_guide_exit_pt
 
@@ -208,8 +208,6 @@ class ShapeSensingNeedleNode( NeedleNode ):
             ),
             axis=0,
         )
-
-        pmat, Rmat = self.__transform(pmat, Rmat)
 
         return pmat, Rmat
 
