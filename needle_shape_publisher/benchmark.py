@@ -318,8 +318,8 @@ class ShapeSensingBenchmarker(Node):
             ax: plt.Axes
 
             ax.errorbar(
-                x=tbl_stats.index,
-                y=tbl_stats[(lbl, "mean")],
+                x=tbl_stats.index.to_numpy(),
+                y=tbl_stats[(lbl, "mean")].to_numpy(),
                 yerr=tbl_stats[[(lbl, "min"), (lbl, "max")]].to_numpy().transpose(),
                 label=lbl.split("_")[1],
                 linewidth=3,
@@ -330,8 +330,8 @@ class ShapeSensingBenchmarker(Node):
         # for
         
         axs[-1].plot(
-            lenchange_ts.index,
-            lenchange_ts["delta_lenchange_timestamp__ns"],
+            lenchange_ts.index.to_numpy(),
+            lenchange_ts["delta_lenchange_timestamp__ns"].to_numpy(),
             label="Length Change",
             linewidth=4,
         )
