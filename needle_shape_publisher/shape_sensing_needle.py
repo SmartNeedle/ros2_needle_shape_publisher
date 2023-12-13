@@ -53,7 +53,7 @@ class ShapeSensingNeedleNode( NeedleNode ):
 
         # configure current needle pose parameters
         self.current_needle_pose = (np.zeros( 3 ), self.R_NEEDLEPOSE)
-        
+
         # - look-up table of (insertion depth (mod ds), theta rotation (rads))
         self.history_needle_pose = np.reshape([ 0, 0 ], (-1, 1))
 
@@ -64,23 +64,23 @@ class ShapeSensingNeedleNode( NeedleNode ):
         self.pub_depth = self.create_publisher( Float64, 'state/insertion_depth', 1 )
 
         # create subscriptions
-        self.sub_curvatures = self.create_subscription( 
-            Float64MultiArray, 
+        self.sub_curvatures = self.create_subscription(
+            Float64MultiArray,
             'state/curvatures',
-            self.sub_curvatures_callback, 
-            10 
+            self.sub_curvatures_callback,
+            10
         )
-        self.sub_entrypoint = self.create_subscription( 
-            Point, 
-            'state/skin_entry', 
-            self.sub_entrypoint_callback, 
-            10 
+        self.sub_entrypoint = self.create_subscription(
+            Point,
+            'state/skin_entry',
+            self.sub_entrypoint_callback,
+            10
         )
-        self.sub_needlepose = self.create_subscription( 
-            PoseStamped, 
+        self.sub_needlepose = self.create_subscription(
+            PoseStamped,
             '/stage/state/needle_pose',
-            self.sub_needlepose_callback, 
-            10 
+            self.sub_needlepose_callback,
+            10
         )
 
         # create timers
@@ -147,7 +147,7 @@ class ShapeSensingNeedleNode( NeedleNode ):
             kc2 = kc1
             if len( self.kc_i ) >= 2:
                 kc2 = self.kc_i[1]
-                
+
             pmat, Rmat = self.ss_needle.get_needle_shape( kc1, kc2, self.w_init_i )
 
         # elif
@@ -181,12 +181,12 @@ class ShapeSensingNeedleNode( NeedleNode ):
         # if
         elif dL > 0:  # less than ds increment
             pmat_straight        = np.zeros((2, 3), dtype=pmat.dtype)
-            pmat_straight[-1, 2] = dL  
+            pmat_straight[-1, 2] = dL
 
         # elif
-        Rmat_straight = np.tile( 
-            np.eye(3, dtype=Rmat.dtype), 
-            (pmat_straight.shape[0], 1, 1) 
+        Rmat_straight = np.tile(
+            np.eye(3, dtype=Rmat.dtype),
+            (pmat_straight.shape[0], 1, 1)
         )
 
         # update the needle shapes to move coordinate frames
@@ -220,7 +220,7 @@ class ShapeSensingNeedleNode( NeedleNode ):
         pmat, Rmat = self.get_needleshape()
 
         # update initial kappa_c values
-        self.kc_i = self.ss_needle.current_kc
+        self.kc_i     = self.ss_needle.current_kc
         self.w_init_i = self.ss_needle.current_winit
 
         # check to make sure messages are not None
@@ -238,11 +238,11 @@ class ShapeSensingNeedleNode( NeedleNode ):
                 f"Needle L: {self.ss_needle.length} | Needle Shape L: {needle_L} | Current Depth: {self.ss_needle.current_depth}" )
 
         # generate pose message
-        header = Header( stamp=self.get_clock().now().to_msg(), frame_id='robot' )
+        header    = Header( stamp=self.get_clock().now().to_msg(), frame_id='robot' )
         msg_shape = utilities.poses2msg( pmat, Rmat, header=header )
 
         # generate kappa_c and w_init message
-        msg_kc = Float64MultiArray( data=self.kc_i )
+        msg_kc    = Float64MultiArray( data=self.kc_i )
         msg_winit = Float64MultiArray( data=self.w_init_i.tolist() )
         msg_depth = Float64(data=float(self.insertion_depth))
 
@@ -253,10 +253,19 @@ class ShapeSensingNeedleNode( NeedleNode ):
         self.pub_kc.publish( msg_kc )
         self.pub_winit.publish( msg_winit )
         self.pub_depth.publish( msg_depth )
-        self.get_logger().debug( "Published needle shape, kappa_c and w_init on topics: "
-                                 f"{self.pub_shape.topic},{self.pub_kc.topic},{self.pub_winit.topic}" )
+        self.get_logger().debug(
+            "Published needle shape, kappa_c and w_init on topics: "
+            f"{self.pub_shape.topic},{self.pub_kc.topic},{self.pub_winit.topic}"
+        )
 
     # publish_shape
+
+    async def publish_shape_async(self):
+        """ Function to asynchronously publish the needle shape """
+        # TODO
+        pass
+
+    # publish_shape_async
 
     def sub_curvatures_callback( self, msg: Float64MultiArray ):
         """ Subscription to needle sensor curvatures """
@@ -299,7 +308,7 @@ class ShapeSensingNeedleNode( NeedleNode ):
 
         # update the insertion depth (y-coordinate is the insertion depth)
         self.insertion_depth = max(
-            0, 
+            0,
             min(
                 self.current_needle_pose[0][2] - self.ss_needle.insertion_point[2], # z-axis
                 self.ss_needle.length
