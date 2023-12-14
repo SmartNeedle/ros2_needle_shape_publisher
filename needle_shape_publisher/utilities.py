@@ -1,4 +1,5 @@
 import numpy as np
+from scipy.spatial.transform import Rotation
 
 # ROS messages
 from geometry_msgs.msg import PoseArray, Pose
@@ -22,8 +23,8 @@ def calculate_needle_length(shape: np.ndarray):
 def msg2pose( msg: Pose ) -> np.ndarray:
     """ Convert a Pose message into a pose"""
     pos = np.array( [ msg.position.x, msg.position.y, msg.position.z ] )
-    quat = np.array( [ msg.orientation.w, msg.orientation.x, msg.orientation.y, msg.orientation.z ] )
-    R = geometry.quat2rotm( quat )
+    quat = np.array( [ msg.orientation.x, msg.orientation.y, msg.orientation.z, msg.orientation.w ] )
+    R = Rotation.from_quat(quat).as_matrix()
 
     return pos, R
 
@@ -57,11 +58,11 @@ def pose2msg( pos: np.ndarray, R: np.ndarray ) -> Pose:
     msg.position.z = pos[ 2 ]
 
     # handle orientation
-    quat = geometry.rotm2quat( R )
-    msg.orientation.w = quat[ 0 ]
-    msg.orientation.x = quat[ 1 ]
-    msg.orientation.y = quat[ 2 ]
-    msg.orientation.z = quat[ 3 ]
+    quat = Rotation.from_matrix(R).as_quat()
+    msg.orientation.x = quat[ 0 ]
+    msg.orientation.y = quat[ 1 ]
+    msg.orientation.z = quat[ 2 ]
+    msg.orientation.w = quat[ 3 ]
 
     return msg
 

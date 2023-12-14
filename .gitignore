@@ -169,3 +169,6 @@ dmypy.json
 
 # vim backup files
 *.swp
+
+# apple files
+.DS_STORE
