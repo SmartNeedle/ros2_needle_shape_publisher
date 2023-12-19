@@ -292,8 +292,10 @@ class ShapeSensingNeedleNode( NeedleNode ):
         # update the insertion point relative to the initial base of the insertion point
         self.ss_needle.insertion_point = (
             insertion_point
-            - self.needle_guide_exit_pt
+            - self.needle_guide_exit_pt * [1, 1, 0]
         )
+
+        self.get_logger().debug(f"Current insertion point rel. to needle base = {self.ss_needle.insertion_point}")
 
     # sub_entrypoint_callback
 
