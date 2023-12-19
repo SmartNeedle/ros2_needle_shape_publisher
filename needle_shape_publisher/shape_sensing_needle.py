@@ -22,6 +22,7 @@ class ShapeSensingNeedleNode( NeedleNode ):
     PARAM_KCINIT           = ".".join( [ PARAM_OPTIMIZER, 'initial_kappa_c' ] ) # initial kappa_c for optimization
     PARAM_WINIT            = ".".join( [ PARAM_OPTIMIZER, 'initial_w_init' ] )  # initial omega_init for optimization
     PARAM_OPTIM_MAXITER    = ".".join( [ PARAM_OPTIMIZER, 'max_iterations' ] )
+    PARAM_UPDATE_ORNT_AIR  = ".".join( [ PARAM_OPTIMIZER, 'update_orientation_with_airgap'] )
     PARAM_OPTIM_MAXITER_LB = 2
 
     # needle pose parameters
@@ -44,7 +45,11 @@ class ShapeSensingNeedleNode( NeedleNode ):
                                                 descriptor=pd_optim_maxiter ).get_parameter_value().integer_value
 
         # configure shape-sensing needle
-        self.ss_needle._update_orientation_needle_airgap       = False # causes large orientation errors when controlling
+        self.ss_needle._update_orientation_needle_airgap       = self.declare_parameter(
+            self.PARAM_UPDATE_ORNT_AIR,
+            value=True,
+            descriptor=ParameterDescriptor(type=Parameter.Type.BOOL.value),
+        ).get_parameter_value().bool_value
         self.ss_needle.optimizer.options[ 'options' ]          = { 'maxiter': optim_maxiter }
         self.ss_needle.optimizer.options[ 'w_init_bounds' ][2] = [ -1e-3, 1e-3 ]
         

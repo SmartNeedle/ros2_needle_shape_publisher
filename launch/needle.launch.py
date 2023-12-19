@@ -53,23 +53,31 @@ def generate_launch_description():
     
     arg_temp_compensate = DeclareLaunchArgument( 'tempCompensate', default_value="True",
                                                description="Whether to perform temperature compensation or not." )
+    
+    arg_optim_update_ornt_airgap = DeclareLaunchArgument(
+        'optimNeedleUpdateOrientationAirGap',
+        default_value="True",
+        description="Whether to update the needle's tissue orientation based on estimated air gap orientation",
+    )
 
     # included launch arguments
     ld_needlepub = IncludeLaunchDescription( # needle shape publisher
-             PythonLaunchDescriptionSource(
-                os.path.join(pkg_needle_shape_publisher, 'sensorized_shapesensing_needle_decomposed.launch.py')),
-                launch_arguments = {
-                    'needleParamFile'   : PathJoinSubstitution([pkg_needle_shape_publisher, 'needle_data', LaunchConfiguration('needleParamFile')]),
-                    'numSignals'        : LaunchConfiguration('numSignals'),
-                    'optimMaxIterations': LaunchConfiguration('optimMaxIterations'),
-                    'tempCompensate'    : LaunchConfiguration('tempCompensate'),
-                    }.items()
-            )
+        PythonLaunchDescriptionSource(
+        os.path.join(pkg_needle_shape_publisher, 'sensorized_shapesensing_needle_decomposed.launch.py')),
+        launch_arguments = {
+            'needleParamFile'                   : PathJoinSubstitution([pkg_needle_shape_publisher, 'needle_data', LaunchConfiguration('needleParamFile')]),
+            'numSignals'                        : LaunchConfiguration('numSignals'),
+            'optimMaxIterations'                : LaunchConfiguration('optimMaxIterations'),
+            'tempCompensate'                    : LaunchConfiguration('tempCompensate'),
+            'optimNeedleUpdateOrientationAirGap': LaunchConfiguration('optimNeedleUpdateOrientationAirGap'),
+        }.items()
+    )
     # configure launch description
     ld.add_action(arg_params)
     ld.add_action(arg_numsignals)
     ld.add_action(arg_optim_maxiter)
     ld.add_action(arg_temp_compensate)
+    ld.add_action(arg_optim_update_ornt_airgap)
 
     ld.add_action(ld_needlepub)
 
