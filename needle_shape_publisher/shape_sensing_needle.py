@@ -44,11 +44,13 @@ class ShapeSensingNeedleNode( NeedleNode ):
                                                 descriptor=pd_optim_maxiter ).get_parameter_value().integer_value
 
         # configure shape-sensing needle
-        self.ss_needle.optimizer.options[ 'options' ] = { 'maxiter': optim_maxiter }
+        self.ss_needle._update_orientation_needle_airgap       = False # causes large orientation errors when controlling
+        self.ss_needle.optimizer.options[ 'options' ]          = { 'maxiter': optim_maxiter }
         self.ss_needle.optimizer.options[ 'w_init_bounds' ][2] = [ -1e-3, 1e-3 ]
-        self.ss_needle.ref_wavelengths = np.ones_like( self.ss_needle.ref_wavelengths )
-        self.ss_needle.current_depth = 0
-        self.air_gap = 0  # the length of the gap in the air from the tissue
+        
+        self.ss_needle.ref_wavelengths    = np.ones_like( self.ss_needle.ref_wavelengths )
+        self.ss_needle.current_depth      = 0
+        self.air_gap                      = 0  # the length of the gap in the air from the tissue
         self.ss_needle.current_curvatures = np.zeros( (2, self.ss_needle.num_activeAreas), dtype=float )
 
         # configure current needle pose parameters
