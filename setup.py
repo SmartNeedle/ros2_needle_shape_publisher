@@ -29,6 +29,7 @@ setup(
                 'sensorized_needle = needle_shape_publisher.sensorized_needle:main',
                 'shapesensing_needle = needle_shape_publisher.shape_sensing_needle:main',
                 'shapesensing_benchmarker = needle_shape_publisher.benchmark:main',
+                'shape_plotter = needle_shape_publisher.shape_plotter:main',
         ],
     },
 )
