@@ -63,6 +63,8 @@ class NeedleShapePlotter(Node):
             self.axes[0].set_title("Top View")
             self.axes[1].set_title("View from Right of Needle")
 
+            [ax.grid(visible=True) for ax in self.axes]
+
             plt.show()
 
             return
