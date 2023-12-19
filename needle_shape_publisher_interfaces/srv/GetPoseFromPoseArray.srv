@@ -1,0 +1,10 @@
+int64 index -1 # the index for which you want the point location along the needle (default tip)
+---
+bool success   # whether the shape was calculated or not
+float64 x      # the needle shape's x-value for position
+float64 y      # the needle shape's y-value for position
+float64 z      # the needle shape's z-value for position
+float64 qx     # the needle shape's x-value for quaternion orientation
+float64 qy     # the needle shape's y-value for quaternion orientation
+float64 qz     # the needle shape's z-value for quaternion orientation
+float64 qw     # the needle shape's w-value for quaternion orientation

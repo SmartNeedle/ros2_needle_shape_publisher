@@ -6,6 +6,10 @@ from rclpy import Parameter
 from geometry_msgs.msg import PoseArray, Point, PoseStamped
 from rcl_interfaces.msg import ParameterDescriptor
 from std_msgs.msg import Float64MultiArray, Header, Float64
+from std_srvs.srv import Trigger
+
+from needle_shape_publisher_interfaces.srv import GetPoseFromPoseArray
+
 # needle shape sensing package
 from needle_shape_sensing.intrinsics import SHAPETYPE as NEEDLESHAPETYPE, AirDeflection
 
@@ -88,6 +92,13 @@ class ShapeSensingNeedleNode( NeedleNode ):
             '/stage/state/needle_pose',
             self.sub_needlepose_callback,
             10
+        )
+
+        # services
+        self.sub_needleshape_query = self.create_service(
+            GetPoseFromPoseArray,
+            "current_shape/query",
+            self.srv_needleshape_query_callback,
         )
 
         # create timers
@@ -339,6 +350,35 @@ class ShapeSensingNeedleNode( NeedleNode ):
         # else
 
     # sub_needlepose_callback
+            
+    def srv_needleshape_query_callback(self, req: GetPoseFromPoseArray.Request, res: GetPoseFromPoseArray.Response):
+        """ Query the current needle shape """
+        header = Header(stamp=self.get_clock().now().to_msg(), frame_id='needle')
+        pmat, Rmat = self.get_needleshape()
+
+        if pmat is None or Rmat is None:
+            res.success = False
+            return res
+        
+        # if
+
+
+        idx = req.index
+        msg_pose = utilities.pose2msg(pmat[idx], Rmat[idx])
+
+        res.success = True
+        res.x       = msg_pose.position.x
+        res.y       = msg_pose.position.y
+        res.z       = msg_pose.position.z
+        res.qx      = msg_pose.orientation.x
+        res.qy      = msg_pose.orientation.y
+        res.qz      = msg_pose.orientation.z
+        res.qw      = msg_pose.orientation.w
+
+        return res
+
+
+    # srv_query_needle_shape_callback
 
 
 # class: ShapeSensingNeedleNode
