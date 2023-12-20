@@ -8,7 +8,10 @@ from rcl_interfaces.msg import ParameterDescriptor
 from std_msgs.msg import Float64MultiArray, Header, Float64
 from std_srvs.srv import Trigger
 
-from needle_shape_publisher_interfaces.srv import GetPoseFromPoseArray
+from needle_shape_publisher_interfaces.srv import (
+    GetPoseFromPoseArray,
+    GetPoseArray,
+)
 
 # needle shape sensing package
 from needle_shape_sensing.intrinsics import SHAPETYPE as NEEDLESHAPETYPE, AirDeflection
@@ -95,8 +98,13 @@ class ShapeSensingNeedleNode( NeedleNode ):
         )
 
         # services
-        self.sub_needleshape_query = self.create_service(
+        self.sub_needleshape_querypt = self.create_service(
             GetPoseFromPoseArray,
+            "current_shape/query_point",
+            self.srv_needleshape_querypt_callback,
+        )
+        self.sub_needleshape_querypt = self.create_service(
+            GetPoseArray,
             "current_shape/query",
             self.srv_needleshape_query_callback,
         )
@@ -351,9 +359,29 @@ class ShapeSensingNeedleNode( NeedleNode ):
 
     # sub_needlepose_callback
             
-    def srv_needleshape_query_callback(self, req: GetPoseFromPoseArray.Request, res: GetPoseFromPoseArray.Response):
+    def srv_needleshape_query_callback(self, req: GetPoseArray.Request, res: GetPoseArray.Response):
         """ Query the current needle shape """
         header = Header(stamp=self.get_clock().now().to_msg(), frame_id='needle')
+        pmat, Rmat = self.get_needleshape()
+
+        if pmat is None or Rmat is None:
+            res.success = False
+            return res
+        
+        # if
+
+        msg_pose = utilities.poses2msg(pmat, Rmat, header=header)
+
+        res.success    = True
+        res.pose_array = msg_pose
+
+        return res
+
+
+    # srv_query_needle_shape_callback
+            
+    def srv_needleshape_querypt_callback(self, req: GetPoseFromPoseArray.Request, res: GetPoseFromPoseArray.Response):
+        """ Query the current needle shape """
         pmat, Rmat = self.get_needleshape()
 
         if pmat is None or Rmat is None:
